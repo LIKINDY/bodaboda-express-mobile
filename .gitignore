@@ -62,5 +62,11 @@ none
 # Environment & Credentials
 .env
 **/.env
-**/.env.*
+**/.env.local
+**/.env.*.local
+!**/.env.example
 *.secret
+
+# Node.js
+node_modules/
+**/node_modules/

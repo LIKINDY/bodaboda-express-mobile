@@ -86,10 +86,10 @@ initWebSocketServer(server);
 
 // 6. Start Server
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n======================================================`);
   console.log(`🚀 Bodaboda Express Backend is running on port ${PORT}`);
-  console.log(`📡 WebSocket URL: ws://localhost:${PORT}/ws`);
-  console.log(`🌐 HTTP REST API: http://localhost:${PORT}/api/v1`);
+  console.log(`📡 WebSocket URL: ws://0.0.0.0:${PORT}/ws`);
+  console.log(`🌐 HTTP REST API: http://0.0.0.0:${PORT}/api/v1`);
   console.log(`======================================================\n`);
 });

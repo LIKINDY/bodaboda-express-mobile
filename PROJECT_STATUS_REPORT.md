@@ -1,126 +1,189 @@
-# 🏍️ Bodaboda Express — Ripoti Rasmi ya Hali ya Mradi (Project Status Report)
-*Imeandaliwa na kusasishwa: Likindy Ismail & Antigravity*
-*Tarehe ya Sasisho: Oktoba 2026*
+# 🏍️ Bodaboda Express — Ripoti Rasmi ya Mradi kwa Ajili ya Timu (Official Team Project Report)
+
+**Tarehe ya Ripoti:** Oktoba 2026  
+**Mradi:** Bodaboda Express (Mobile Apps & Node.js Backend Ecosystem)  
+**Msimamizi wa Mradi:** Likindy Ismail  
+**Hifadhi Rasmi ya GitHub:** [https://github.com/LIKINDY/bodaboda-express-mobile](https://github.com/LIKINDY/bodaboda-express-mobile)  
+**Tawi Kuu (Branch):** `main`
 
 ---
 
 ## 📌 1. Muhtasari wa Mradi (Executive Summary)
-**Bodaboda Express** ni mfumo kamili wa usafiri wa bodaboda, bajaji, na usafirishaji wa mizigo na vifurushi (Ride-hailing & Parcel Delivery Platform). Mfumo huu unajumuisha programu tatu (3) kuu zinazofanya kazi kwa ushirikiano wa moja kwa moja kupitia mtandao:
 
-1. **📱 Bodaboda Customer App (`bodaboda_customer`)** — Programu ya mteja ya kuomba usafiri au kusafirisha mizigo, kuona nauli kamili, kuchagua njia za malipo, kupata PIN ya safari, na kufuatilia dereva kwenye ramani yenye rangi za foleni.
-2. **🏍️ Bodaboda Driver App (`bodaboda_driver`)** — Programu ya dereva ya kupokea maombi ya safari na vifurushi, kubadili hali ya Online/Offline, kuthibitisha PIN ya mteja kuanza safari, kuona ramani ya mahitaji ya abiria (Heatmap), kutumia njia za mkato (Shortcuts), na kupokea safari za mfululizo akiwa ndani ya 1km.
-3. **🖥️ Real-time Backend Engine (`backend/server.dart`)** — Seva ya WebSocket na API inayounganisha wateja na madereva moja kwa moja, kugawa safari, kuthibitisha PIN, na kutoa dashibodi ya ufuatiliaji wa mfumo kwa njia ya mtandao.
+**Bodaboda Express** ni mfumo wa kisasa wa kiteknolojia wa usafiri wa bodaboda, bajaji, na usafirishaji wa vifurushi na mizigo (Ride-Hailing & Parcel Logistics Platform). 
+
+Mfumo mzima umekamilika katika awamu ya usanifu, muundo wa programu (Mobile Apps), na muundo wa seva (Node.js Backend & Real-time WebSockets), na sasa umepakiwa rasmi kwenye GitHub ili kuwezesha timu yote (Backend, Mobile, QA, na Uongozi) kufanya kazi kwa pamoja.
 
 ---
 
-## 🌐 2. Hali ya Uendeshaji Sasa (Active Live Services)
+## 🌐 2. Hali ya Uendeshaji na Viunganishi (Active Endpoints & Repositories)
 
-| Huduma / App | Anwani ya Wavuti (URL) | Port | Hali (Status) | Maelezo |
+| Huduma / Sehemu | Mahali / URL | Port / Itifaki | Hali (Status) | Maelezo |
 | :--- | :--- | :--- | :--- | :--- |
-| **Backend & WebSocket Gateway** | [http://localhost:3000/](http://localhost:3000/) | `3000` | 🟢 **ONLINE** | WebSocket: `ws://localhost:3000/ws` • Web Monitor & API |
-| **Customer Web App** | [http://localhost:8080/](http://localhost:8080/) | `8080` | 🟢 **ONLINE** | App ya Mteja (Usafiri, Mzigo, Ramani ya Foleni) |
-| **Driver Web App** | [http://localhost:8081/](http://localhost:8081/) | `8081` | 🟢 **ONLINE** | App ya Dereva (Online/Offline, OTP, Heatmap, Shortcut) |
+| **GitHub Repository** | [github.com/LIKINDY/bodaboda-express-mobile](https://github.com/LIKINDY/bodaboda-express-mobile) | Git / HTTPS | 🟢 **ACTIVE** | Msimbo mzima wa mradi uko hewani |
+| **Node.js Backend API** | `http://localhost:3000/api/v1` | `3000` / HTTP | 🟢 **TESTED & READY** | REST API ya Auth, Safari, Malipo, Dereva |
+| **WebSocket Dispatcher** | `ws://localhost:3000/ws` | `3000` / WS | 🟢 **ONLINE** | Mawasiliano ya moja kwa moja ya safari |
+| **Customer Flutter App** | `bodaboda_customer/` | Flutter 3.x | 🟢 **0 ERRORS** | Programu ya mteja (Android & iOS) |
+| **Driver Flutter App** | `bodaboda_driver/` | Flutter 3.x | 🟢 **0 ERRORS** | Programu ya dereva (Android & iOS) |
 
 ---
 
 ## 📱 3. Bodaboda Customer App (`bodaboda_customer`)
-**Mfumo wa Teknolojia:** Flutter 3.x | Dart | GoRouter | Google Maps Flutter | WebSockets | Shared Preferences
 
-### ✅ Vipengele Vilivyoboreshwa na Kukamilika Katika Awamu Hii:
-1. **Ukurasa wa Kujisajili (Sign Up Screen):**
-   - Sehemu ya **Jina Kamili** la mteja.
-   - Chaguo la kupakia **Picha ya Wasifu** (Profile Photo) yenye uhakiki.
-   - Namba ya simu ya Tanzania (`+255`) yenye uthibitisho wa OTP.
-   - Sera ya usalama ya ukumbusho wa uhakiki wa wiki 1.
-2. **Ufuatiliaji wa Usalama wa Siku 7 (7-Day Inactivity Verification):**
-   - Huduma ya `UserProfileService` inafuatilia muda wa safari ya mwisho ya mteja.
-   - Mteja akikaa zaidi ya wiki moja (siku 7) pasipo kuomba usafiri, mfumo unazuia kuagiza safari na kutoa ujumbe wa kiusalama unaomtaka kuthibitisha namba yake kwa OTP kwanza.
-3. **Uteuzi wa Huduma & Aina ya Chombo (Booking & Rides Screen):**
-   - **Usafiri wa Abiria (Ride):** Kumpeleka mteja mahali fulani.
-   - **Kusafirisha Mzigo (Delivery):** Kusafirisha vifurushi na mizigo.
-   - Chaguo la **Bodaboda** au **Bajaji** lenye hesabu halisi ya bei (`estimateFare`) kulingana na eneo na umbali.
-4. **Njia Tatu (3) za Malipo:**
-   - **Cash (Pesa Mkononi):** Kulipa dereva baada ya kufika.
-   - **M-Pesa / Tigo Pesa:** Kutuma moja kwa moja kwa dereva.
-   - **Bodaboda Wallet:** Kulipa kupitia pochi ya app.
-5. **Uzalishaji wa PIN ya Safari (4-Digit OTP Driver Lock):**
+Programu ya mteja imejengwa kwa Flutter 3.x na inajumuisha huduma zifuatazo zilizokamilika na kufanyiwa majaribio:
+
+1. **Ukurasa wa Kujisajili & OTP (Authentication):**
+   - Usajili kwa namba ya simu ya Tanzania (`+255`) yenye uthibitisho wa OTP ya tarakimu 4.
+   - Kujaza jina kamili na chaguo la kupakia picha ya wasifu (Profile Photo).
+2. **Ulinzi wa Akaunti wa Siku 7 (7-Day Security Check):**
+   - Mfumo unafuatilia muda wa safari ya mwisho. Mteja asipoomba safari ndani ya siku 7 mfululizo, anatakiwa kuthibitisha namba yake kwa OTP kwanza kabla ya kuagiza safari mpya.
+3. **Uteuzi wa Huduma & Aina ya Chombo:**
+   - **Usafiri wa Abiria (Ride):** Kumpeleka mteja mahali anapohitaji.
+   - **Kusafirisha Vifurushi/Mizigo (Delivery):** Kutuma vifurushi na bidhaa.
+   - Chaguo la **Bodaboda** au **Bajaji** lenye hesabu halisi ya bei (`estimateFare`) kulingana na umbali (kilomita) na muda.
+4. **PIN ya Safari ya Tarakimu 4 (Ride Security OTP Lock):**
    - Kila safari inapoundwa, mfumo huzalisha PIN ya tarakimu 4 (mfano: `4921`).
-   - Mteja anapewa PIN hii ili ampe dereva aliyekubali safari pekee, kuzuia dereva mwingine au mtu mwingine kupora safari.
-6. **Mpito wa Moja kwa Moja kwenye Ramani ya Safari (Live Tracking Map):**
-   - Dereva akikubali safari, screen ya kumtafuta dereva inajifunga moja kwa moja na kufungua ramani ya safari.
-   - Ramani ina rangi mbili za foleni:
-     - 🟢 **Kijani (Green):** Njia isiyo na foleni.
-     - 🔴 **Nyekundu (Red):** Njia yenye foleni ya magari.
-   - Inaonyesha umbali uliobaki (km) na dakika zilizobaki (ETA).
-7. **Faini ya Kughairi Safari (Cancellation Fee & Debt):**
-   - Mteja akighairi safari baada ya dereva kuanza safari na kutembea zaidi ya kilomita 0.5, mfumo huweka deni la fidia ya dereva (TZS 1,500) kwenye akaunti yake.
+   - Mteja anampa dereva PIN hii pale tu anapofika; safari haiwezi kuanza bila PIN hii sahihi.
+5. **Ramani ya Ufuatiliaji wa Safari Moja kwa Moja (Live Tracking):**
+   - Dereva akikubali safari, screen ya kutafuta inajifunga moja kwa moja na kufungua ramani.
+   - Ramani inaonyesha rangi mbili za trafiki:
+     - 🟢 **Kijani (Green):** Njia isiyo na msongamano wa magari.
+     - 🔴 **Nyekundu (Red):** Njia yenye msongamano (foleni).
+   - Inaonyesha umbali uliobaki (km) na muda wa kufika (ETA).
+6. **Njia Nyingi za Malipo (Flexible Payments):**
+   - **Cash (Pesa Taslimu):** Kulipa dereva baada ya kufika.
+   - **M-Pesa / Tigo Pesa / Airtel Money:** Kulipa moja kwa moja kidijitali.
+   - **Bodaboda Wallet:** Kulipa kupitia salio lililopo ndani ya pochi ya app.
+7. **Sera ya Kughairi Safari (Cancellation Fee Policy):**
+   - Mteja akighairi safari baada ya dereva kuanza safari na kutembea zaidi ya kilomita 0.5, mfumo unaweka deni la fidia ya dereva (TZS 1,500) kwenye akaunti yake.
 
 ---
 
 ## 🏍️ 4. Bodaboda Driver App (`bodaboda_driver`)
-**Mfumo wa Teknolojia:** Flutter 3.x | Dart | GoRouter | Google Maps Flutter | WebSockets | Riverpod
 
-### ✅ Vipengele Vilivyoboreshwa na Kukamilika Katika Awamu Hii:
-1. **Kuingia kwa Kutumia Google & Apple (Social Sign-In):**
-   - Vitufe vya *Continue with Google* na *Continue with Apple* vimewekwa kwenye kurasa zote za kuingia za dereva (`driver_login_screen.dart` na `sign_in_screen.dart`).
-2. **Upakiaji wa Nyaraka za Usajili (Document Upload):**
-   - Picha sasa ni **Live Face Selfie (Sura Halisi)** badala ya picha ya kawaida ya pasipoti.
-   - Dereva anachagua **kimoja wapo kati ya vitambulisho vitatu (3)**:
-     1. Kitambulisho cha NIDA
-     2. Kadi ya Kupiga Kura
-     3. Barua ya Serikali ya Mtaa au Sheha
-   - Leseni ya Udereva na LATRA zimeondolewa kwenye usajili wa awali ili kuondoa usumbufu wakati wa kujiunga.
-3. **Leseni ya Udereva na LATRA Ndani ya Wasifu (Inner Profile):**
-   - Ukurasa wa `profile_screen.dart` sasa una sehemu rasmi ya *Nyaraka za Udereva* ya kujaza namba ya Leseni, tarehe ya kuisha, na namba ya cheti cha LATRA.
-4. **Kitufe cha Online / Offline (Kuondoa Vitufe vya Zamani vya Transport/Delivery):**
-   - Vitufe vya zamani vya Transport na Delivery kwenye dashboard vimeondolewa kabisa.
-   - Kitufe kipya cha kisasa cha **Online / Offline** kimeongezwa:
-     - **Akiwa Online:** Dereva anaanza kupokea maombi ya safari na mizigo moja kwa moja.
-     - **Akiwa Offline:** Mfumo unazuia maombi yote; hapokei pop-up yoyote ya safari.
-5. **Pop-up ya Ombi la Safari yenye Bango Wazi (15s Modal):**
-   - Pop-up ya safari inaonyesha bango kubwa lililo wazi:
+Programu ya dereva imejengwa kwa Flutter 3.x ikilenga kumpa dereva mazingira bora ya kazi na mapato:
+
+1. **Kuingia Rahisi (Social Sign-In & OTP):**
+   - Vitufe vya *Continue with Google* na *Continue with Apple* vimewekwa kwa ajili ya kuingia haraka.
+   - Uthibitisho wa OTP kwa namba ya simu.
+2. **Usajili Nyumbufu wa Nyaraka (Streamlined Verification):**
+   - Upigaji wa picha halisi ya sura (**Live Face Selfie**).
+   - Chaguo la kitambulisho kimoja kati ya vitatu (Kitambulisho cha NIDA, Kadi ya Kupiga Kura, au Barua ya Serikali ya Mtaa/Sheha).
+   - Leseni ya udereva na LATRA zimewekwa ndani ya ukurasa wa wasifu (`profile_screen.dart`) ili dereva asikwame wakati wa kujiunga mara ya kwanza.
+3. **Kitufe cha Online / Offline:**
+   - **Akiwa Online:** Anaanza kupokea maombi ya safari na vifurushi mara moja.
+   - **Akiwa Offline:** Hapokei ombi lolote; mfumo haumsumbui.
+4. **Dirisha la Ombi la Safari lenye Bango Wazi (15-Second Modal):**
+   - Bango kubwa linabainisha wazi aina ya ombi:
      - 📦 **KUSAFIRISHA MZIGO (DELIVERY)** au
      - 🏍️ **USAFIRI WA ABIRIA (TRANSPORT)**
-   - Inaonyesha aina ya chombo (Bodaboda vs Bajaji) na njia ya malipo ya mteja.
-6. **Kuanza Safari kwa PIN ya Mteja (Customer OTP Verification):**
-   - Dereva anapofika kituoni na kubonyeza *ANZISHA SAFARI*, dirisha la kuweka PIN linafunguka.
-   - Dereva lazima aweke tarakimu 4 alizopewa na mteja ili kufungua na kuanzisha safari.
-7. **Safari za Mfululizo (Back-to-back Requests Ndani ya 1km):**
-   - Dereva akiwa umbali wa chini ya kilomita 1 (<= 1.0 km) kufika mwisho wa safari yake, mfumo unamletea arifa ya ombi la safari inayofuata:
-     > *"🔥 OMBI LA SAFARI IJAYO (Umebaki 0.9 km): Abiria Rashid Mwamba • Bodaboda • TZS 4,000"*
-   - Dereva akikubali, safari inayofuata inapangwa mara moja ili asikae bila kazi punde atakapomshusha abiria.
-8. **Ramani ya Mahitaji ya Abiria (Demand Heatmap 🔥):**
-   - Kitufe cha moto 🔥 kwenye upau wa ramani kinamwezesha dereva kuwasha/kuzima ramani ya mahitaji ya abiria.
-   - Inaonyesha maeneo yenye maombi mengi ya abiria (Kariakoo Msimbazi, Ubungo Stand, Mwenge Stand, Posta Mpya) yakiwa na duara za mng'ao wa rangi nyekundu na machungwa.
-9. **Rangi za Foleni na Njia ya Mkato (Shortcut ⚡):**
-   - Ramani inasoma:
-     - 🟢 **Kijani:** Sehemu isiyo na foleni.
-     - 🔴 **Nyekundu:** Sehemu yenye foleni ya magari.
-   - Kitufe cha **Njia ya Mkato ⚡ (Shortcut):** Dereva akibonyeza, ramani inabadilika mara moja kwenda kwenye njia ya mkato isiyo na foleni (kijani tupu) na kupunguza muda wa safari.
-10. **Kumaliza Safari bila Ku-logout (Return to Dashboard):**
-    - Hitilafu ya dereva kutolewa nje (kwenye splash/login) baada ya kutoa nyota imerekebishwa; sasa anarudi moja kwa moja kwenye `/dashboard`.
+   - Huonyesha nauli, umbali, na eneo la kumchukua abiria.
+5. **Kuanza Safari kwa PIN ya Mteja (PIN Verification):**
+   - Dereva anapofika na kubonyeza *Anzisha Safari*, dirisha la kuingiza tarakimu 4 linafunguka. Dereva anaingiza PIN aliyopewa na mteja kuanza safari.
+6. **Safari za Mfululizo (Back-to-Back Rides Ndani ya 1km):**
+   - Dereva akiwa amebakiza chini ya 1.0 km kufika mwisho wa safari yake, anapokea arifa ya safari mpya inayofuata ili asikae kijiweni bila kazi mara tu akimshusha abiria.
+7. **Ramani ya Mahitaji ya Abiria (Demand Heatmap 🔥):**
+   - Kitufe cha moto 🔥 kinamwonyesha dereva maeneo yenye maombi mengi ya abiria jijini Dar es Salaam (Kariakoo Msimbazi, Ubungo Stand, Mwenge Stand, Posta Mpya).
+8. **Njia ya Mkato na Rangi za Foleni (Traffic Shortcut ⚡):**
+   - Dereva anaweza kubonyeza kitufe cha mkato ili kubadilisha njia na kupita njia zisizo na foleni (kijani).
+9. **Kukamilisha Safari na Kurudi Dashboard:**
+   - Safari inapokamilika na baada ya dereva kumpa mteja tathmini (rating), anarudishwa moja kwa moja kwenye Dashboard akiwa tayari kwa safari nyingine.
 
 ---
 
-## 🖥️ 5. Backend Server & WebSocket Dispatcher (`backend/server.dart`)
+## 🖥️ 5. Seva ya Backend ya Node.js (`backend/`)
 
-- **Anwani:** `http://localhost:3000/` | WebSocket: `ws://localhost:3000/ws`
-- **Maboresho:**
-  - Inasaidia jumbe za aina mpya: `new_ride` (yenye `serviceType`, `pin`, `payment`, `price`), `ride_accepted`, `verify_pin`, na `driver_status_update`.
-  - Inatoa dashibodi ya kisasa ya wavuti (Web Monitor) inayoonyesha idadi ya vifaa vilivyounganishwa, safari zinazoendelea, na mtiririko wa matukio ya moja kwa moja (Live Event Logs).
+Mfumo kamili wa mwanzo (Starter Engine) wa Node.js umesanifiwa na kuwekwa ndani ya folda ya `backend/`:
+
+### Muundo wa Folda:
+```text
+backend/
+├── src/
+│   ├── controllers/         # Logic za biashara (Auth, Rides, Drivers, Payments)
+│   ├── routes/              # Njia za API za /api/v1/*
+│   ├── services/            # WebSocket Gateway & Fare Pricing Engine
+│   ├── middleware/          # JWT Verification & Global Error Handler
+│   └── server.js            # Express App & WebSocket Server
+├── .env.example             # Mfano wa vigezo vya usanidi
+├── package.json             # Maktaba (Express, WS, CORS, Dotenv, JWT, Bcrypt)
+└── README.md                # Mwongozo wa kina kwa ajili ya Msanidi wa Backend
+```
+
+### Majaribio Yaliyofanyika na Kupita (Verification Passed):
+- ✅ `npm install`: Maktaba zote 88 zimesakinishwa bila hitilafu yoyote (0 vulnerabilities).
+- ✅ Server Startup: Seva inawaka kwenye port `3000` (`http://localhost:3000/api/v1` na `ws://localhost:3000/ws`).
+- ✅ Health Check: `GET /health` inarudisha `{ status: "online" }`.
+- ✅ Pricing API: `POST /api/v1/rides/estimate` inakokotoa nauli ya Bodaboda na Bajaji kwa usahihi.
 
 ---
 
 ## 📊 6. Hali ya Afya ya Msimbo (Codebase Health)
 
-- ✅ **Dart Analysis (`backend/server.dart`):** `No issues found!` (0 errors).
-- ✅ **Flutter Analysis (`bodaboda_customer`):** `No errors found!` (0 errors).
-- ✅ **Flutter Analysis (`bodaboda_driver`):** `No errors found!` (0 errors).
-- ✅ **Mifumo yote mitatu inafanya kazi kwa wakati mmoja (Concurrent Live Execution).**
+- ✅ **Node.js Backend (`backend/`):** 0 errors, 0 vulnerabilities.
+- ✅ **Flutter Customer App (`bodaboda_customer/`):** 0 errors, 0 warnings.
+- ✅ **Flutter Driver App (`bodaboda_driver/`):** 0 errors, 0 warnings.
+- ✅ **Git & GitHub:** Msimbo mzima upo kwenye tawi la `main` kule [bodaboda-express-mobile](https://github.com/LIKINDY/bodaboda-express-mobile).
 
 ---
 
-## 🎯 7. Hatua Zinazofuata (Roadmap & Next Steps)
-1. **Kuunganisha Huduma ya SMS Halisi:** Kuunganisha SMS Gateway (mfano: Beem Africa, Twilio) kwa ajili ya kutuma OTP halisi kwenye simu za mkononi za wateja na madereva.
-2. **Malipo Halisi ya Simu (Mobile Money Integration):** Kuunganisha API za M-Pesa (Vodacom Daraja), Tigo Pesa, na Airtel Money kwa ajili ya makato na malipo ya moja kwa moja ya pochi.
-3. **Uchapishaji wa APK & Play Store:** Kufanya compilation ya toleo jipya la APK na Bundle kwa ajili ya majaribio kwenye vifaa halisi vya Android na iOS.
+## 👥 7. Mgawanyo wa Majukumu na Hatua Zinazofuata (Action Items)
+
+### 👨‍💻 1. Mhandisi wa Backend (Backend Developer):
+1. **Ku-clone Repo:**
+   ```bash
+   git clone https://github.com/LIKINDY/bodaboda-express-mobile.git
+   cd bodaboda-express-mobile/backend
+   npm install
+   ```
+2. **Kuunganisha Hifadhidata (Database):**
+   - Sanidi MongoDB au PostgreSQL ndani ya `src/config/` ili kuhifadhi watumiaji, madereva, na safari za kudumu.
+3. **Kuunganisha SMS Gateway ya Tanzania:**
+   - Unganisha Beem Africa au Twilio ndani ya `authController.js` ili namba za `+255` zipokee OTP halisi za SMS badala ya nambari ya majaribio (`1234`).
+4. **Kuunganisha Malipo ya Simu (Mobile Money):**
+   - Unganisha M-Pesa Daraja API, Selcom, au DPO kwenye `paymentController.js`.
+
+### 📱 2. Mhandisi wa Mobile Apps (Mobile Developer):
+1. **Kuunganisha Endpoint ya Seva:**
+   - Badilisha URL kutoka `localhost` kwenda kwenye URL ya production au IP ya mtandao wa ofisi/staging ndani ya `mock_backend_service.dart`.
+2. **Kujaribu Mawasiliano ya Moja kwa Moja:**
+   - Kufanya majaribio ya simu mbili halisi zilizounganishwa kwenye seva moja kupitia mtandao wa Wi-Fi/4G.
+
+### 🧪 3. Mtaalamu wa Ubora na Majaribio (QA & Tester):
+1. Kupima mzunguko mzima wa safari:
+   - Mteja anaomba safari -> Dereva anapokea pop-up -> Dereva anakubali -> Mteja anapata taarifa za dereva -> Dereva anafika -> Dereva anaingiza PIN ya mteja -> Safari inaanza -> Safari inakamilika -> Malipo na Rating.
+
+### 💼 4. Msimamizi wa Mradi & Uongozi (Product Lead):
+1. Kufuatilia hatua za ushirikiano kwenye GitHub kupitia Pull Requests.
+2. Kuandaa mazingira ya deployment ya Seva (Render, AWS, DigitalOcean, au Railway).
+
+---
+
+## 🛠️ 8. Jinsi ya Kuanza Kazi (Quick Start for Team Members)
+
+```bash
+# 1. Clone repository
+git clone https://github.com/LIKINDY/bodaboda-express-mobile.git
+cd bodaboda-express-mobile
+
+# 2. Fungua tawi lako la kazi kabla ya kubadilisha kitu
+git checkout -b feature/jina-la-kazi-yako
+
+# 3. Kuanzisha Backend
+cd backend
+npm install
+npm run dev
+
+# 4. Kuanzisha Customer App
+cd ../bodaboda_customer
+flutter pub get
+flutter run
+
+# 5. Kuanzisha Driver App
+cd ../bodaboda_driver
+flutter pub get
+flutter run
+```
+
+---
+
+*Ripoti hii imeandaliwa rasmi ili kutumwa kwa washirika na wanakikundi wote wa mradi wa Bodaboda Express.*

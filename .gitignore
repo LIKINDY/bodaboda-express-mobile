@@ -1,0 +1,66 @@
+# Bodaboda Express Root .gitignore
+
+# Android / iOS Built binaries & APKs
+*.apk
+*.aab
+*.ipa
+*.app
+
+# Flutter / Dart
+**/.dart_tool/
+**/build/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/coverage/
+**/app.*.symbols
+**/app.*.map.json
+
+# Android Studio / Gradle
+**/.gradle/
+**/local.properties
+**/gradle/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/*.keystore
+**/*.jks
+
+# iOS / Xcode
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/app.flx
+
+# IDE & Editors
+.idea/
+**/.idea/
+*.iml
+**/*.iml
+*.ipr
+*.iws
+.vscode/
+**/.vscode/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs & Diagnostics / Scratch
+*.log
+*.tmp
+none
+**/.history/
+**/.buildlog/
+
+# Environment & Credentials
+.env
+**/.env
+**/.env.*
+*.secret

@@ -820,11 +820,20 @@ class _HomeMapPageState extends State<_HomeMapPage> {
       'pin': '4921',
       'serviceType': 'ride',
       'vehicleType': 'bodaboda',
+      'isForFriend': true,
+      'friendName': 'Juma Rashid',
+      'friendPhone': '+255 712 345 678',
     };
 
     final activeData = _currentRequestData ?? sampleTrip;
     final serviceType = (activeData['serviceType'] ?? activeData['service'] ?? 'ride').toString().toLowerCase();
     final isDelivery = serviceType == 'delivery' || serviceType.contains('mzigo');
+    final isForFriend = activeData['isForFriend'] == true || activeData['is_for_friend'] == true;
+    final friendName = activeData['friendName'] ?? activeData['friend_name'] ?? activeData['recipient_name'];
+    final vehicleType = (activeData['vehicleType'] ?? activeData['vehicle_type'] ?? 'bodaboda').toString().toLowerCase();
+    final vehicleLabel = vehicleType == 'car' || vehicleType == 'taxi'
+        ? 'TAXI (GARI)'
+        : (vehicleType == 'bajaji' ? 'BAJAJI' : 'BODABODA');
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -897,36 +906,109 @@ class _HomeMapPageState extends State<_HomeMapPage> {
             ],
           ),
           const SizedBox(height: 10),
-          // Service Type Indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: isDelivery ? Colors.orange.withOpacity(0.12) : AppTheme.primaryBlue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isDelivery ? Colors.orange.withOpacity(0.4) : AppTheme.primaryBlue.withOpacity(0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isDelivery ? Icons.inventory_2 : Icons.two_wheeler,
-                  size: 14,
-                  color: isDelivery ? Colors.orange.shade800 : AppTheme.primaryBlue,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  isDelivery ? 'KUSAFIRISHA MZIGO (DELIVERY)' : 'USAFIRI WA ABIRIA (TRANSPORT)',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: isDelivery ? Colors.orange.shade800 : AppTheme.primaryBlue,
+          // Service Type & Vehicle Category Indicators
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isDelivery ? Colors.orange.withOpacity(0.12) : AppTheme.primaryBlue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isDelivery ? Colors.orange.withOpacity(0.4) : AppTheme.primaryBlue.withOpacity(0.3),
                   ),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isDelivery ? Icons.inventory_2 : Icons.two_wheeler,
+                      size: 14,
+                      color: isDelivery ? Colors.orange.shade800 : AppTheme.primaryBlue,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      isDelivery ? 'KUSAFIRISHA MZIGO (DELIVERY)' : 'USAFIRI WA ABIRIA (TRANSPORT)',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isDelivery ? Colors.orange.shade800 : AppTheme.primaryBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                decoration: BoxDecoration(
+                  color: vehicleType == 'car'
+                      ? Colors.purple.withOpacity(0.12)
+                      : (vehicleType == 'bajaji' ? Colors.amber.withOpacity(0.15) : Colors.teal.withOpacity(0.12)),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: vehicleType == 'car'
+                        ? Colors.purple.withOpacity(0.4)
+                        : (vehicleType == 'bajaji' ? Colors.amber.withOpacity(0.5) : Colors.teal.withOpacity(0.3)),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      vehicleType == 'car'
+                          ? Icons.directions_car
+                          : (vehicleType == 'bajaji' ? Icons.electric_rickshaw : Icons.two_wheeler),
+                      size: 13,
+                      color: vehicleType == 'car'
+                          ? Colors.purple.shade700
+                          : (vehicleType == 'bajaji' ? Colors.brown.shade800 : Colors.teal.shade700),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      vehicleLabel,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: vehicleType == 'car'
+                            ? Colors.purple.shade700
+                            : (vehicleType == 'bajaji' ? Colors.brown.shade800 : Colors.teal.shade700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
+          if (isForFriend && friendName != null) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withOpacity(0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.people_alt, size: 14, color: Colors.blue),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '${appCopy(context, 'For Friend:', 'Kwa Ajili ya Rafiki:')} $friendName',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 14),
           Row(
             children: [

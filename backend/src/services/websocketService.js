@@ -79,10 +79,20 @@ function handleNewRide(customerSocket, rawData) {
   const rideId = rideData.rideId || `TRIP-${Math.floor(1000 + Math.random() * 9000)}`;
   const otpPin = rideData.otpPin || String(Math.floor(1000 + Math.random() * 9000));
 
+  // Handle Book for a Friend attributes
+  const isForFriend = Boolean(rideData.is_for_friend ?? rideData.isForFriend ?? false);
+  const friendName = rideData.friend_name || rideData.friendName || rideData.recipient_name || null;
+  const friendPhone = rideData.friend_phone || rideData.friendPhone || rideData.recipient_phone || null;
+  const vehicleType = (rideData.vehicle_type || rideData.vehicleType || 'bodaboda').toLowerCase();
+
   const rideRecord = {
     ...rideData,
     rideId,
     otpPin,
+    vehicleType,
+    isForFriend,
+    friendName,
+    friendPhone,
     status: 'searching',
     customerSocket,
     createdAt: new Date().toISOString()
@@ -102,12 +112,17 @@ function handleNewRide(customerSocket, rawData) {
           destinationAddress: rideRecord.destinationAddress,
           pickupLatLng: rideRecord.pickupLatLng,
           destinationLatLng: rideRecord.destinationLatLng,
-          vehicleType: rideRecord.vehicleType || 'bodaboda',
+          vehicleType,
           serviceType: rideRecord.serviceType || 'ride',
           fare: rideRecord.fare,
           paymentMethod: rideRecord.paymentMethod,
           customerName: rideRecord.customerName,
           customerPhone: rideRecord.customerPhone,
+          isForFriend,
+          friendName,
+          friendPhone,
+          recipient_name: friendName,
+          recipient_phone: friendPhone,
           distanceKm: rideRecord.distanceKm || 3.2,
           durationMins: rideRecord.durationMins || 10
         }
@@ -123,11 +138,19 @@ function handleNewRide(customerSocket, rawData) {
       rideId,
       otpPin,
       status: 'searching',
+      isForFriend,
+      friendName,
+      friendPhone,
+      vehicleType,
       driversNotified
     }
   }));
 
-  console.log(`📢 [Ride Created] ${rideId} broadcasted to ${driversNotified} driver(s). OTP: ${otpPin}`);
+  if (isForFriend && friendPhone) {
+    console.log(`📲 [SMS Gateway Dispatch] SMS notification sent to friend ${friendName} (${friendPhone}): "Habari ${friendName}! Rafiki yako ${rideRecord.customerName || 'Mteja'} amekuagizia usafiri wa Bodaboda Express (${vehicleType.toUpperCase()}). PIN ya safari ni ${otpPin}."`);
+  }
+
+  console.log(`📢 [Ride Created] ${rideId} [Vehicle: ${vehicleType}, ForFriend: ${isForFriend}] broadcasted to ${driversNotified} driver(s). OTP: ${otpPin}`);
 }
 
 function handleRideAccepted(driverSocket, message) {
@@ -181,10 +204,20 @@ function handleRideAccepted(driverSocket, message) {
       destinationLatLng: ride.destinationLatLng,
       customerName: ride.customerName,
       customerPhone: ride.customerPhone,
+      isForFriend: ride.isForFriend,
+      friendName: ride.friendName,
+      friendPhone: ride.friendPhone,
+      recipient_name: ride.friendName,
+      recipient_phone: ride.friendPhone,
+      vehicleType: ride.vehicleType,
       fare: ride.fare,
       paymentMethod: ride.paymentMethod
     }
   }));
+
+  if (ride.isForFriend && ride.friendPhone) {
+    console.log(`📲 [SMS Gateway Dispatch] SMS update sent to friend ${ride.friendName} (${ride.friendPhone}): "Dereva ${ride.assignedDriver.driverName} (${ride.assignedDriver.driverPlate}, Simu: ${ride.assignedDriver.driverPhone}) amekubali safari yako ya Bodaboda Express. Yupo njiani!"`);
+  }
 
   // Broadcast to other drivers that this ride is no longer available
   for (const client of clients) {

@@ -154,6 +154,10 @@ class _ActiveRideTrackingScreenState extends State<ActiveRideTrackingScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pin = _trip['pin'] ?? '4872';
     final isDelivery = _trip['serviceType'] == 'delivery';
+    final isForFriend = _trip['isForFriend'] == true || _trip['is_for_friend'] == true;
+    final friendName = _trip['friendName'] ?? _trip['friend_name'] ?? 'Rafiki';
+    final friendPhone = _trip['friendPhone'] ?? _trip['friend_phone'] ?? '';
+    final vehicleType = (_trip['vehicleType'] ?? 'bodaboda').toString().toLowerCase();
 
     return Scaffold(
       body: Stack(
@@ -205,7 +209,7 @@ class _ActiveRideTrackingScreenState extends State<ActiveRideTrackingScreen> {
                           onPressed: () => context.goNamed('dashboard'),
                         ),
                       ),
-                      // Service Type Badge
+                      // Service & Vehicle Type Badge
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -216,10 +220,22 @@ class _ActiveRideTrackingScreenState extends State<ActiveRideTrackingScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(isDelivery ? Icons.inventory_2 : Icons.motorcycle, color: Colors.white, size: 16),
+                            Icon(
+                              isDelivery
+                                  ? Icons.inventory_2
+                                  : (vehicleType.contains('bajaj')
+                                      ? Icons.electric_rickshaw
+                                      : (vehicleType.contains('car') ? Icons.directions_car : Icons.motorcycle)),
+                              color: Colors.white,
+                              size: 16,
+                            ),
                             const SizedBox(width: 6),
                             Text(
-                              isDelivery ? 'Mzigo (Delivery)' : 'Usafiri wa Abiria',
+                              isDelivery
+                                  ? 'Mzigo (Delivery)'
+                                  : (vehicleType.contains('bajaj')
+                                      ? 'Bajaji Comfort'
+                                      : (vehicleType.contains('car') ? 'Car Taxi' : 'Bodaboda Express')),
                               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                           ],
@@ -348,6 +364,29 @@ class _ActiveRideTrackingScreenState extends State<ActiveRideTrackingScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    if (isForFriend) ...[
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.green.shade300),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.people_alt, color: Colors.green, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Safari ya Rafiki: $friendName ${friendPhone.isNotEmpty ? "($friendPhone)" : ""} • SMS ya safari na PIN imetumwa kwake moja kwa moja.',
+                                style: TextStyle(fontSize: 11, color: Colors.green.shade900, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     // Security PIN Banner (Prominently displayed)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),

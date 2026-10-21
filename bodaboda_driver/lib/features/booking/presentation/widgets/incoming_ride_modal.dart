@@ -86,17 +86,24 @@ class _IncomingRideModalState extends State<IncomingRideModal>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final passengerName = widget.rideData['passenger'] ?? 'Amina Salum';
-    final pickup = widget.rideData['pickup'] ?? 'Kariakoo Msimbazi';
-    final dropoff = widget.rideData['dropoff'] ?? 'Posta Mpya, Samora';
-    final price = widget.rideData['price'] ?? 'TZS 4,500';
-    final paymentMethod = widget.rideData['payment'] ?? 'M-Pesa';
+    final isForFriend = widget.rideData['is_for_friend'] == true || widget.rideData['isForFriend'] == true;
+    final friendName = widget.rideData['friend_name'] ?? widget.rideData['friendName'] ?? widget.rideData['recipient_name'];
+    final friendPhone = widget.rideData['friend_phone'] ?? widget.rideData['friendPhone'] ?? widget.rideData['recipient_phone'];
+    final bookerName = widget.rideData['bookedBy'] ?? widget.rideData['customerName'] ?? 'Mteja';
+    final passengerName = (isForFriend && friendName != null)
+        ? friendName
+        : (widget.rideData['passenger'] ?? widget.rideData['customerName'] ?? 'Amina Salum');
+    final pickup = widget.rideData['pickup'] ?? widget.rideData['pickupAddress'] ?? 'Kariakoo Msimbazi';
+    final dropoff = widget.rideData['dropoff'] ?? widget.rideData['destinationAddress'] ?? 'Posta Mpya, Samora';
+    final price = widget.rideData['price'] ?? (widget.rideData['fare'] != null ? 'TZS ${widget.rideData['fare']}' : 'TZS 4,500');
+    final paymentMethod = widget.rideData['payment'] ?? widget.rideData['paymentMethod'] ?? 'M-Pesa';
     final distance = widget.rideData['distance'] ?? '1.2 km away';
     final tripDistance = widget.rideData['tripDistance'] ?? '4.8 km';
     final serviceType = (widget.rideData['serviceType'] ?? widget.rideData['service'] ?? 'ride').toString().toLowerCase();
     final isDelivery = serviceType == 'delivery' || serviceType.contains('mzigo');
-    final vehicleType = (widget.rideData['vehicleType'] ?? widget.rideData['rideType'] ?? 'bodaboda').toString().toLowerCase();
+    final vehicleType = (widget.rideData['vehicleType'] ?? widget.rideData['vehicle_type'] ?? widget.rideData['rideType'] ?? 'bodaboda').toString().toLowerCase();
     final isBajaji = vehicleType.contains('bajaj');
+    final isCar = vehicleType.contains('car') || vehicleType.contains('taxi');
 
     final double progress = _secondsLeft / _totalSeconds;
 
@@ -240,7 +247,9 @@ class _IncomingRideModalState extends State<IncomingRideModal>
               child: Row(
                 children: [
                   Icon(
-                    isDelivery ? Icons.inventory_2 : (isBajaji ? Icons.electric_rickshaw : Icons.two_wheeler),
+                    isDelivery
+                        ? Icons.inventory_2
+                        : (isBajaji ? Icons.electric_rickshaw : (isCar ? Icons.directions_car : Icons.two_wheeler)),
                     color: isDelivery ? Colors.orange.shade800 : AppTheme.primaryBlue,
                     size: 24,
                   ),
@@ -252,7 +261,7 @@ class _IncomingRideModalState extends State<IncomingRideModal>
                         Text(
                           isDelivery
                               ? '📦 KUSAFIRISHA MZIGO (DELIVERY)'
-                              : '🏍️ USAFIRI WA ABIRIA (TRANSPORT)',
+                              : (isCar ? '🚗 TAXI YA GARI (CAB)' : '🏍️ USAFIRI WA ABIRIA (TRANSPORT)'),
                           style: TextStyle(
                             color: isDelivery ? Colors.orange.shade900 : AppTheme.primaryBlue,
                             fontWeight: FontWeight.w900,
@@ -261,8 +270,8 @@ class _IncomingRideModalState extends State<IncomingRideModal>
                         ),
                         Text(
                           isDelivery
-                              ? 'Mteja anasafirisha mzigo/kifurushi • Chombo: ${isBajaji ? 'Bajaji' : 'Bodaboda'}'
-                              : 'Kumpeleka abiria mahali anapokwenda • Chombo: ${isBajaji ? 'Bajaji' : 'Bodaboda'}',
+                              ? 'Mteja anasafirisha mzigo • Chombo: ${isBajaji ? "Bajaji" : (isCar ? "Car Taxi" : "Bodaboda")}'
+                              : 'Kumpeleka abiria anapokwenda • Chombo: ${isBajaji ? "Bajaji" : (isCar ? "Car Taxi" : "Bodaboda")}',
                           style: TextStyle(
                             fontSize: 11,
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -274,11 +283,13 @@ class _IncomingRideModalState extends State<IncomingRideModal>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isDelivery ? Colors.orange.shade800 : AppTheme.primaryBlue,
+                      color: isDelivery
+                          ? Colors.orange.shade800
+                          : (isCar ? Colors.purple.shade700 : AppTheme.primaryBlue),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      isBajaji ? 'BAJAJI' : 'BODABODA',
+                      isBajaji ? 'BAJAJI' : (isCar ? 'CAR TAXI' : 'BODABODA'),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -289,6 +300,41 @@ class _IncomingRideModalState extends State<IncomingRideModal>
                 ],
               ),
             ),
+
+            // Book for a Friend Banner
+            if (isForFriend) ...[
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green.shade500, width: 1.5),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.people_alt, color: Colors.green, size: 24),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '👥 SAFARI KWA AJILI YA RAFIKI',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.green),
+                          ),
+                          Text(
+                            'Abiria wa Kumchukua: $passengerName\nImeagizwa na: $bookerName (Namba ya abiria inapatikana)',
+                            style: TextStyle(fontSize: 11, color: Colors.green.shade900),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
 
             // Passenger Info Tile
             Row(

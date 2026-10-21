@@ -37,24 +37,30 @@ Programu ya mteja imejengwa kwa Flutter 3.x na inajumuisha huduma zifuatazo zili
    - Kujaza jina kamili na chaguo la kupakia picha ya wasifu (Profile Photo).
 2. **Ulinzi wa Akaunti wa Siku 7 (7-Day Security Check):**
    - Mfumo unafuatilia muda wa safari ya mwisho. Mteja asipoomba safari ndani ya siku 7 mfululizo, anatakiwa kuthibitisha namba yake kwa OTP kwanza kabla ya kuagiza safari mpya.
-3. **Uteuzi wa Huduma & Aina ya Chombo:**
-   - **Usafiri wa Abiria (Ride):** Kumpeleka mteja mahali anapohitaji.
-   - **Kusafirisha Vifurushi/Mizigo (Delivery):** Kutuma vifurushi na bidhaa.
-   - Chaguo la **Bodaboda** au **Bajaji** lenye hesabu halisi ya bei (`estimateFare`) kulingana na umbali (kilomita) na muda.
-4. **PIN ya Safari ya Tarakimu 4 (Ride Security OTP Lock):**
+3. **Uteuzi wa Aina 3 za Vyombo vya Usafiri (Multi-Vehicle Category Selection):**
+   - **Bodaboda (Pikipiki):** Nauli ya kuanzia TZS 1,000, TZS 700/km, kiwango cha chini TZS 1,500.
+   - **Bajaji (Guta/Tricycle):** Nauli ya kuanzia TZS 1,500, TZS 1,000/km, kiwango cha chini TZS 2,500.
+   - **Car Taxi (Gari):** Nauli ya kuanzia TZS 3,000, TZS 1,800/km, kiwango cha chini TZS 5,000.
+   - Kila chombo kimepewa beji maalum ya rangi (Teal, Amber, Purple) na mahesabu halisi ya bei, VAT (18%), na muda wa kufika (ETA).
+4. **Kipengele cha Kuagiza Safari kwa Ajili ya Rafiki (Book for a Friend):**
+   - Kitufe cha kubadili (toggle) kati ya "Mimi Mwenyewe" au "Rafiki Yangu".
+   - Kujaza Jina Kamili la Rafiki na Namba ya Simu (`+255`).
+   - Mfumo unatuma taarifa za rafiki kwenye seva na kumpa dereva maelekezo kamili ya kumpokea rafiki huyo.
+   - Ujumbe wa SMS hutumwa moja kwa moja kwenye simu ya rafiki ukiwa na jina la dereva, namba ya namba ya chombo, na kiunganishi cha ufuatiliaji (live tracking link).
+5. **PIN ya Safari ya Tarakimu 4 (Ride Security OTP Lock):**
    - Kila safari inapoundwa, mfumo huzalisha PIN ya tarakimu 4 (mfano: `4921`).
    - Mteja anampa dereva PIN hii pale tu anapofika; safari haiwezi kuanza bila PIN hii sahihi.
-5. **Ramani ya Ufuatiliaji wa Safari Moja kwa Moja (Live Tracking):**
+6. **Ramani ya Ufuatiliaji wa Safari Moja kwa Moja (Live Tracking):**
    - Dereva akikubali safari, screen ya kutafuta inajifunga moja kwa moja na kufungua ramani.
    - Ramani inaonyesha rangi mbili za trafiki:
      - 🟢 **Kijani (Green):** Njia isiyo na msongamano wa magari.
      - 🔴 **Nyekundu (Red):** Njia yenye msongamano (foleni).
-   - Inaonyesha umbali uliobaki (km) na muda wa kufika (ETA).
-6. **Njia Nyingi za Malipo (Flexible Payments):**
+   - Inaonyesha umbali uliobaki (km) na muda wa kufika (ETA), pamoja na beji ya chombo kilichochaguliwa na taarifa za rafiki.
+7. **Njia Nyingi za Malipo (Flexible Payments):**
    - **Cash (Pesa Taslimu):** Kulipa dereva baada ya kufika.
    - **M-Pesa / Tigo Pesa / Airtel Money:** Kulipa moja kwa moja kidijitali.
    - **Bodaboda Wallet:** Kulipa kupitia salio lililopo ndani ya pochi ya app.
-7. **Sera ya Kughairi Safari (Cancellation Fee Policy):**
+8. **Sera ya Kughairi Safari (Cancellation Fee Policy):**
    - Mteja akighairi safari baada ya dereva kuanza safari na kutembea zaidi ya kilomita 0.5, mfumo unaweka deni la fidia ya dereva (TZS 1,500) kwenye akaunti yake.
 
 ---
@@ -77,21 +83,27 @@ Programu ya dereva imejengwa kwa Flutter 3.x ikilenga kumpa dereva mazingira bor
    - Bango kubwa linabainisha wazi aina ya ombi:
      - 📦 **KUSAFIRISHA MZIGO (DELIVERY)** au
      - 🏍️ **USAFIRI WA ABIRIA (TRANSPORT)**
+   - Beji ya chombo: **BODABODA**, **BAJAJI**, au **CAR TAXI**.
+   - Bango maalum la **👥 SAFARI KWA AJILI YA RAFIKI**: Linamjulisha dereva jina na namba ya simu ya rafiki anayepaswa kumchukua, pamoja na jina la aliyelipia.
    - Huonyesha nauli, umbali, na eneo la kumchukua abiria.
-5. **Kuanza Safari kwa PIN ya Mteja (PIN Verification):**
+5. **Kupiga Simu kwa Abiria au Mlipaji (Dual Call Options):**
+   - Safari ikiwa ni ya rafiki, dereva anapobonyeza kitufe cha simu anapewa machaguo mawili:
+     1. Kumpigia simu abiria anayechukuliwa (Friend / Passenger).
+     2. Kumpigia simu mteja aliyelipia safari (Booker).
+6. **Kuanza Safari kwa PIN ya Mteja (PIN Verification):**
    - Dereva anapofika na kubonyeza *Anzisha Safari*, dirisha la kuingiza tarakimu 4 linafunguka. Dereva anaingiza PIN aliyopewa na mteja kuanza safari.
-6. **Safari za Mfululizo (Back-to-Back Rides Ndani ya 1km):**
+7. **Safari za Mfululizo (Back-to-Back Rides Ndani ya 1km):**
    - Dereva akiwa amebakiza chini ya 1.0 km kufika mwisho wa safari yake, anapokea arifa ya safari mpya inayofuata ili asikae kijiweni bila kazi mara tu akimshusha abiria.
-7. **Ramani ya Mahitaji ya Abiria (Demand Heatmap 🔥):**
+8. **Ramani ya Mahitaji ya Abiria (Demand Heatmap 🔥):**
    - Kitufe cha moto 🔥 kinamwonyesha dereva maeneo yenye maombi mengi ya abiria jijini Dar es Salaam (Kariakoo Msimbazi, Ubungo Stand, Mwenge Stand, Posta Mpya).
-8. **Njia ya Mkato na Rangi za Foleni (Traffic Shortcut ⚡):**
+9. **Njia ya Mkato na Rangi za Foleni (Traffic Shortcut ⚡):**
    - Dereva anaweza kubonyeza kitufe cha mkato ili kubadilisha njia na kupita njia zisizo na foleni (kijani).
-9. **Kukamilisha Safari na Kurudi Dashboard:**
-   - Safari inapokamilika na baada ya dereva kumpa mteja tathmini (rating), anarudishwa moja kwa moja kwenye Dashboard akiwa tayari kwa safari nyingine.
+10. **Kukamilisha Safari na Kurudi Dashboard:**
+    - Safari inapokamilika na baada ya dereva kumpa mteja tathmini (rating), anarudishwa moja kwa moja kwenye Dashboard akiwa tayari kwa safari nyingine.
 
 ---
 
-## 🖥️ 5. Seva ya Backend ya Node.js (`backend/`)
+## 🖥️ 5. Seva ya Backend ya Node.js & Database (`backend/`)
 
 Mfumo kamili wa mwanzo (Starter Engine) wa Node.js umesanifiwa na kuwekwa ndani ya folda ya `backend/`:
 
@@ -101,7 +113,9 @@ backend/
 ├── src/
 │   ├── controllers/         # Logic za biashara (Auth, Rides, Drivers, Payments)
 │   ├── routes/              # Njia za API za /api/v1/*
-│   ├── services/            # WebSocket Gateway & Fare Pricing Engine
+│   ├── services/            # WebSocket Gateway & Fare Pricing Engine (Bodaboda, Bajaji, Car)
+│   ├── db/
+│   │   └── migrations/      # 002_add_friend_and_vehicle_categories.sql
 │   ├── middleware/          # JWT Verification & Global Error Handler
 │   └── server.js            # Express App & WebSocket Server
 ├── .env.example             # Mfano wa vigezo vya usanidi

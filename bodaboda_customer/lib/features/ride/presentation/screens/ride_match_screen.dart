@@ -137,13 +137,18 @@ class _RideMatchScreenState extends State<RideMatchScreen> with TickerProviderSt
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 500),
         child: _state == RideMatchState.searching
-            ? _SearchingView(pulseAnimation: _pulseAnimation, onCancel: _cancelRide)
+            ? _SearchingView(
+                pulseAnimation: _pulseAnimation,
+                onCancel: _cancelRide,
+                tripData: _currentTrip,
+              )
             : _DriverFoundView(
                 pin: _securePin,
-              onTrackRide: _navigateToTracking,
-              onCancel: _cancelRide,
-              onChat: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChatScreen())),
-              onCall: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CallScreen())),
+                tripData: _currentTrip,
+                onTrackRide: _navigateToTracking,
+                onCancel: _cancelRide,
+                onChat: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChatScreen())),
+                onCall: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CallScreen())),
               ),
       ),
     );
@@ -155,71 +160,120 @@ class _RideMatchScreenState extends State<RideMatchScreen> with TickerProviderSt
 class _SearchingView extends StatelessWidget {
   final Animation<double> pulseAnimation;
   final VoidCallback onCancel;
-  const _SearchingView({required this.pulseAnimation, required this.onCancel});
+  final Map<String, dynamic> tripData;
+
+  const _SearchingView({
+    required this.pulseAnimation,
+    required this.onCancel,
+    required this.tripData,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final vType = (tripData['vehicleType'] ?? 'bodaboda').toString().toLowerCase();
+    final isForFriend = tripData['isForFriend'] == true || tripData['is_for_friend'] == true;
+    final friendName = tripData['friendName'] ?? tripData['friend_name'] ?? 'Rafiki';
+
+    IconData vehicleIcon = Icons.motorcycle;
+    String vehicleName = 'Bodaboda';
+    if (vType.contains('bajaj')) {
+      vehicleIcon = Icons.electric_rickshaw;
+      vehicleName = 'Bajaji';
+    } else if (vType.contains('car') || vType.contains('taxi')) {
+      vehicleIcon = Icons.directions_car;
+      vehicleName = 'Car Taxi';
+    }
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Pulsing animation
-          ScaleTransition(
-            scale: pulseAnimation,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.08),
-                    shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Pulsing animation with dynamic vehicle icon
+            ScaleTransition(
+              scale: pulseAnimation,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 150,
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withValues(alpha: 0.14),
-                    shape: BoxShape.circle,
+                  Container(
+                    width: 110,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    color: AppTheme.primaryBlue,
-                    shape: BoxShape.circle,
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: const BoxDecoration(
+                      color: AppTheme.primaryBlue,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(vehicleIcon, color: Colors.white, size: 38),
                   ),
-                  child: const Icon(Icons.motorcycle, color: Colors.white, size: 38),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 40),
-          Text(
-            'Inatafuta Dereva',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Tafadhali subiri wakati tunamtafutia\nudereva anayekaribu nawe...',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade600, height: 1.5),
-          ),
-          const SizedBox(height: 40),
-          const LinearProgressIndicator(
-            backgroundColor: Color(0xFFE0E0E0),
-            color: AppTheme.primaryBlue,
-          ),
-          const SizedBox(height: 60),
-          TextButton.icon(
-            onPressed: onCancel,
-            icon: const Icon(Icons.cancel_outlined, color: AppTheme.accentRed),
-            label: const Text('Ghairi Ombi', style: TextStyle(color: AppTheme.accentRed)),
-          ),
-        ],
+            const SizedBox(height: 32),
+            Text(
+              'Inatafuta Dereva wa $vehicleName',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              isForFriend
+                  ? 'Unamwombea usafiri rafiki yako: $friendName.\nTafadhali subiri wakati tunamtafutia dereva wa karibu...'
+                  : 'Tafadhali subiri wakati tunamtafutia\nudereva anayekaribu nawe...',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade600, height: 1.5),
+            ),
+            if (isForFriend) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.sms_outlined, size: 16, color: AppTheme.primaryBlue),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'SMS ya safari itatumwa kwa $friendName mara dereva akipatikana.',
+                        style: const TextStyle(color: AppTheme.primaryBlue, fontSize: 11, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 32),
+            const LinearProgressIndicator(
+              backgroundColor: Color(0xFFE0E0E0),
+              color: AppTheme.primaryBlue,
+            ),
+            const SizedBox(height: 48),
+            TextButton.icon(
+              onPressed: onCancel,
+              icon: const Icon(Icons.cancel_outlined, color: AppTheme.accentRed),
+              label: const Text('Ghairi Ombi', style: TextStyle(color: AppTheme.accentRed)),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -229,20 +283,72 @@ class _SearchingView extends StatelessWidget {
 
 class _DriverFoundView extends StatelessWidget {
   final String pin;
+  final Map<String, dynamic> tripData;
   final VoidCallback onTrackRide;
   final VoidCallback onCancel;
   final VoidCallback onChat;
   final VoidCallback onCall;
 
-  const _DriverFoundView({required this.pin, required this.onTrackRide, required this.onCancel, required this.onChat, required this.onCall});
+  const _DriverFoundView({
+    required this.pin,
+    required this.tripData,
+    required this.onTrackRide,
+    required this.onCancel,
+    required this.onChat,
+    required this.onCall,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isForFriend = tripData['isForFriend'] == true || tripData['is_for_friend'] == true;
+    final friendName = tripData['friendName'] ?? tripData['friend_name'] ?? 'Rafiki';
+    final friendPhone = tripData['friendPhone'] ?? tripData['friend_phone'] ?? '';
+    final vType = (tripData['vehicleType'] ?? 'bodaboda').toString().toLowerCase();
+
+    String vehicleBadge = 'BODABODA';
+    if (vType.contains('bajaj')) vehicleBadge = 'BAJAJI';
+    if (vType.contains('car') || vType.contains('taxi')) vehicleBadge = 'CAR TAXI';
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (isForFriend) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade300),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.people_alt, color: Colors.green, size: 24),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Safari kwa ajili ya: $friendName',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.green),
+                        ),
+                        if (friendPhone.isNotEmpty)
+                          Text('Simu: $friendPhone', style: TextStyle(fontSize: 12, color: Colors.green.shade800)),
+                        const Text(
+                          'Taarifa na PIN zimetumwa kwa SMS kwa rafiki yako.',
+                          style: TextStyle(fontSize: 11, color: Colors.black54),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // Driver card
           Container(
             padding: const EdgeInsets.all(16),
@@ -264,15 +370,31 @@ class _DriverFoundView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Sergio Ramasis', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Row(
+                        children: [
+                          const Text('Sergio Ramasis', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryBlue,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              vehicleBadge,
+                              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 2),
-                      Text('Plate: TZ-001-A', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                      Text('Plate: TZ-001-A • $vehicleBadge', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                       const SizedBox(height: 4),
                       Row(
                         children: [
                           const Icon(Icons.star, color: Colors.amber, size: 16),
                           const SizedBox(width: 4),
-                          Text('4.0', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
+                          Text('4.9', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
                           const SizedBox(width: 4),
                           Text('(142 safari)', style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
                         ],

@@ -11,7 +11,7 @@ import '../../../../core/widgets/smart_street_map.dart';
 // ─── State for booking flow ───────────────────────────────────────────────────
 
 enum BookingStep { addressInput, vehicleSelect, availableRides }
-enum VehicleType { bodaboda, bajaji }
+enum VehicleType { bodaboda, bajaji, car }
 enum ServiceType { ride, delivery }
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -30,6 +30,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   bool _showRideButtons = false;
   bool _useLightMap = false;
 
+  // Book for a Friend state
+  bool _isForFriend = false;
+  final _friendNameController = TextEditingController();
+  final _friendPhoneController = TextEditingController();
+
   final _pickupController = TextEditingController(text: 'Current location');
   final _dropoffController = TextEditingController();
 
@@ -37,6 +42,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   void dispose() {
     _pickupController.dispose();
     _dropoffController.dispose();
+    _friendNameController.dispose();
+    _friendPhoneController.dispose();
     super.dispose();
   }
 
@@ -91,20 +98,54 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       return;
     }
 
+    if (_isForFriend) {
+      final friendName = _friendNameController.text.trim();
+      final friendPhone = _friendPhoneController.text.trim();
+      if (friendName.isEmpty || friendPhone.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Tafadhali jaza jina na namba ya simu ya rafiki yako'),
+            backgroundColor: AppTheme.accentRed,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+        return;
+      }
+    }
+
+    final String vTypeStr = vehicle == VehicleType.bodaboda ? 'bodaboda' : (vehicle == VehicleType.bajaji ? 'bajaji' : 'car');
+    final String vLabelStr = vehicle == VehicleType.bodaboda
+        ? 'Bodaboda Express'
+        : (vehicle == VehicleType.bajaji ? 'Bajaji Comfort' : 'Car Taxi (Cab)');
+    final String distStr = vehicle == VehicleType.bodaboda
+        ? '800m away'
+        : (vehicle == VehicleType.bajaji ? '1.2 km away' : '2.0 km away');
+
     final booking = {
       'rideId': 'TRIP-${DateTime.now().millisecondsSinceEpoch % 10000}',
-      'passenger': UserProfileService.instance.fullName,
-      'passengerPhone': UserProfileService.instance.phone,
+      'is_for_friend': _isForFriend,
+      'isForFriend': _isForFriend,
+      'friend_name': _isForFriend ? _friendNameController.text.trim() : null,
+      'friendName': _isForFriend ? _friendNameController.text.trim() : null,
+      'friend_phone': _isForFriend ? _friendPhoneController.text.trim() : null,
+      'friendPhone': _isForFriend ? _friendPhoneController.text.trim() : null,
+      'recipient_name': _isForFriend ? _friendNameController.text.trim() : null,
+      'recipient_phone': _isForFriend ? _friendPhoneController.text.trim() : null,
+      'passenger': _isForFriend ? _friendNameController.text.trim() : UserProfileService.instance.fullName,
+      'passengerPhone': _isForFriend ? _friendPhoneController.text.trim() : UserProfileService.instance.phone,
+      'bookedBy': UserProfileService.instance.fullName,
+      'bookedByPhone': UserProfileService.instance.phone,
       'pickup': _pickupController.text.trim().isEmpty ? 'Kariakoo Msimbazi' : _pickupController.text.trim(),
       'dropoff': _dropoffController.text.trim().isEmpty ? 'Posta Mpya, Samora Ave' : _dropoffController.text.trim(),
       'serviceType': service == ServiceType.ride ? 'ride' : 'delivery',
       'serviceLabel': service == ServiceType.ride ? 'Usafiri wa Abiria' : 'Kusafirisha Mzigo (Delivery)',
-      'vehicleType': vehicle == VehicleType.bodaboda ? 'bodaboda' : 'bajaji',
-      'vehicleLabel': vehicle == VehicleType.bodaboda ? 'Bodaboda Express' : 'Bajaji Comfort',
+      'vehicleType': vTypeStr,
+      'vehicleLabel': vLabelStr,
       'price': fare,
       'payment': payment,
       'pin': (1000 + (DateTime.now().millisecondsSinceEpoch % 9000)).toString(),
-      'distance': vehicle == VehicleType.bodaboda ? '800m away' : '1.2 km away',
+      'distance': distStr,
       'tripDistance': '4.8 km',
     };
 
@@ -192,6 +233,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           selectedService: _selectedService,
                           selectedVehicle: _selectedVehicle,
                           selectedPayment: _selectedPaymentMethod,
+                          isForFriend: _isForFriend,
+                          friendNameController: _friendNameController,
+                          friendPhoneController: _friendPhoneController,
+                          onToggleForFriend: (val) => setState(() => _isForFriend = val),
                           onServiceChanged: (s) => setState(() => _selectedService = s),
                           onVehicleChanged: (v) => setState(() => _selectedVehicle = v),
                           onPaymentChanged: (p) => setState(() => _selectedPaymentMethod = p),
@@ -618,13 +663,23 @@ class _VehicleSelectSheet extends StatelessWidget {
                     onTap: () => onSelect(VehicleType.bodaboda),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _VehicleCard(
                     label: 'Bajaji',
                     icon: Icons.electric_rickshaw,
                     isSelected: selected == VehicleType.bajaji,
                     onTap: () => onSelect(VehicleType.bajaji),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _VehicleCard(
+                    label: 'Car Taxi',
+                    icon: Icons.directions_car,
+                    badge: 'TAXI',
+                    isSelected: selected == VehicleType.car,
+                    onTap: () => onSelect(VehicleType.car),
                   ),
                 ),
               ],
@@ -656,9 +711,16 @@ class _VehicleCard extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool isSelected;
+  final String? badge;
   final VoidCallback onTap;
 
-  const _VehicleCard({required this.label, required this.icon, required this.isSelected, required this.onTap});
+  const _VehicleCard({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    this.badge,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -666,7 +728,7 @@ class _VehicleCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.primaryBlue.withValues(alpha: 0.06) : Colors.white,
           border: Border.all(
@@ -677,11 +739,26 @@ class _VehicleCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 48, color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade400),
-            const SizedBox(height: 10),
+            if (badge != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppTheme.primaryBlue : Colors.orange.shade700,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  badge!,
+                  style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                ),
+              ),
+            Icon(icon, size: 40, color: isSelected ? AppTheme.primaryBlue : Colors.grey.shade400),
+            const SizedBox(height: 8),
             Text(
               label,
+              textAlign: TextAlign.center,
               style: TextStyle(
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: isSelected ? AppTheme.primaryBlue : Theme.of(context).colorScheme.onSurface,
               ),
@@ -699,6 +776,10 @@ class _AvailableRidesSheet extends StatelessWidget {
   final ServiceType selectedService;
   final VehicleType selectedVehicle;
   final String selectedPayment;
+  final bool isForFriend;
+  final TextEditingController friendNameController;
+  final TextEditingController friendPhoneController;
+  final ValueChanged<bool> onToggleForFriend;
   final ValueChanged<ServiceType> onServiceChanged;
   final ValueChanged<VehicleType> onVehicleChanged;
   final ValueChanged<String> onPaymentChanged;
@@ -710,6 +791,10 @@ class _AvailableRidesSheet extends StatelessWidget {
     required this.selectedService,
     required this.selectedVehicle,
     required this.selectedPayment,
+    required this.isForFriend,
+    required this.friendNameController,
+    required this.friendPhoneController,
+    required this.onToggleForFriend,
     required this.onServiceChanged,
     required this.onVehicleChanged,
     required this.onPaymentChanged,
@@ -720,8 +805,10 @@ class _AvailableRidesSheet extends StatelessWidget {
   String get _currentFare {
     if (selectedVehicle == VehicleType.bodaboda) {
       return selectedService == ServiceType.ride ? 'TZS 3,000' : 'TZS 2,500';
-    } else {
+    } else if (selectedVehicle == VehicleType.bajaji) {
       return selectedService == ServiceType.ride ? 'TZS 5,000' : 'TZS 4,500';
+    } else {
+      return selectedService == ServiceType.ride ? 'TZS 9,000' : 'TZS 8,000';
     }
   }
 
@@ -729,6 +816,7 @@ class _AvailableRidesSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final bodaFare = selectedService == ServiceType.ride ? 'TZS 3,000' : 'TZS 2,500';
     final bajajiFare = selectedService == ServiceType.ride ? 'TZS 5,000' : 'TZS 4,500';
+    final carFare = selectedService == ServiceType.ride ? 'TZS 9,000' : 'TZS 8,000';
 
     return Container(
       decoration: BoxDecoration(
@@ -876,9 +964,170 @@ class _AvailableRidesSheet extends StatelessWidget {
               isSelected: selectedVehicle == VehicleType.bajaji,
               onTap: () => onVehicleChanged(VehicleType.bajaji),
             ),
+            const SizedBox(height: 10),
+            _VehicleSelectionCard(
+              title: 'Car Taxi (Cab)',
+              subtitle: 'Gari ya kisasa • AC • Watu 4 (2.0km)',
+              fare: carFare,
+              icon: Icons.directions_car,
+              badge: 'TAXI',
+              isSelected: selectedVehicle == VehicleType.car,
+              onTap: () => onVehicleChanged(VehicleType.car),
+            ),
             const SizedBox(height: 16),
 
-            // 3. Payment Method Choice
+            // 3. Passenger Option: Book for Myself vs Book for a Friend
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Mpanda Safari (Passenger):',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                ),
+                if (isForFriend)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'Rafiki Yangu',
+                      style: TextStyle(color: AppTheme.primaryBlue, fontWeight: FontWeight.bold, fontSize: 11),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => onToggleForFriend(false),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: !isForFriend ? Colors.white : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: !isForFriend ? const [BoxShadow(color: Colors.black12, blurRadius: 4)] : null,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.person, size: 16, color: !isForFriend ? AppTheme.primaryBlue : Colors.grey.shade600),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Mimi Mwenyewe',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: !isForFriend ? AppTheme.primaryBlue : Colors.grey.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => onToggleForFriend(true),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isForFriend ? AppTheme.primaryBlue : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: isForFriend ? [BoxShadow(color: AppTheme.primaryBlue.withOpacity(0.3), blurRadius: 4)] : null,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.people_alt_outlined, size: 16, color: isForFriend ? Colors.white : Colors.grey.shade600),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Rafiki Yangu',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: isForFriend ? Colors.white : Colors.grey.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isForFriend) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBlue.withOpacity(0.04),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(Icons.contact_phone_outlined, size: 16, color: AppTheme.primaryBlue),
+                        SizedBox(width: 6),
+                        Text('Taarifa za Rafiki Anayepanda:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppTheme.primaryBlue)),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: friendNameController,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: 'Jina Kamili la Rafiki (e.g. Baraka Elias)',
+                        prefixIcon: const Icon(Icons.person_outline, size: 18),
+                        fillColor: Colors.white,
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: friendPhoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: 'Namba ya Simu (+255 7XX XXX XXX)',
+                        prefixIcon: const Icon(Icons.phone_android, size: 18),
+                        fillColor: Colors.white,
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey.shade300)),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '💡 Dereva atampigia simu rafiki yako na SMS ya safari itatumwa kwake moja kwa moja.',
+                      style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+
+            // 4. Payment Method Choice
             const Text(
               'Chagua Njia ya Malipo:',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
@@ -910,7 +1159,7 @@ class _AvailableRidesSheet extends StatelessWidget {
             ),
             const SizedBox(height: 18),
 
-            // 4. Request Button
+            // 5. Request Button
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -933,7 +1182,7 @@ class _AvailableRidesSheet extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${selectedService == ServiceType.ride ? "Omba Usafiri" : "Tuma Mzigo"} Sasa · $_currentFare',
+                      '${selectedService == ServiceType.ride ? (isForFriend ? "Agizia Rafiki Usafiri" : "Omba Usafiri") : "Tuma Mzigo"} Sasa · $_currentFare',
                       style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -952,6 +1201,7 @@ class _VehicleSelectionCard extends StatelessWidget {
   final String subtitle;
   final String fare;
   final IconData icon;
+  final String? badge;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -960,6 +1210,7 @@ class _VehicleSelectionCard extends StatelessWidget {
     required this.subtitle,
     required this.fare,
     required this.icon,
+    this.badge,
     required this.isSelected,
     required this.onTap,
   });
@@ -994,7 +1245,25 @@ class _VehicleSelectionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  Row(
+                    children: [
+                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      if (badge != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade700,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            badge!,
+                            style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                   const SizedBox(height: 2),
                   Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                 ],
@@ -1021,6 +1290,7 @@ class _VehicleSelectionCard extends StatelessWidget {
     );
   }
 }
+
 
 class _PaymentMethodChip extends StatelessWidget {
   final String label;

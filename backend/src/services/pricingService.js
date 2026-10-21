@@ -1,21 +1,33 @@
 /**
- * Fare Calculation Service for Bodaboda & Bajaji
+ * Fare Calculation Service for Bodaboda, Bajaji, & Car (Taxi)
  * Rates in Tanzanian Shillings (TZS)
  */
 export function calculateFare({ distanceKm = 1.0, durationMins = 5, vehicleType = 'bodaboda', serviceType = 'ride' }) {
   const km = Math.max(0.5, Number(distanceKm));
   const mins = Math.max(1, Number(durationMins));
+  const vType = (vehicleType || 'bodaboda').toLowerCase();
 
   let baseFare = 1000;
   let perKmRate = 700;
   let perMinRate = 50;
   let minFare = 1500;
+  let vehicleName = 'Bodaboda Express';
+  let capacity = '1 abiria';
 
-  if (vehicleType.toLowerCase() === 'bajaji') {
+  if (vType === 'bajaji') {
     baseFare = 1500;
     perKmRate = 1000;
     perMinRate = 80;
     minFare = 2500;
+    vehicleName = 'Bajaji Comfort';
+    capacity = 'Hadi abiria 3';
+  } else if (vType === 'car' || vType === 'taxi') {
+    baseFare = 3000;
+    perKmRate = 1800;
+    perMinRate = 150;
+    minFare = 5000;
+    vehicleName = 'Car (Taxi Cab)';
+    capacity = 'Hadi abiria 4 • AC';
   }
 
   // Delivery surcharge for goods handling
@@ -32,6 +44,9 @@ export function calculateFare({ distanceKm = 1.0, durationMins = 5, vehicleType 
   return {
     fare: finalFare,
     currency: 'TZS',
+    vehicleType: vType,
+    vehicleName,
+    capacity,
     breakdown: {
       baseFare,
       distanceKm: km,
@@ -39,8 +54,9 @@ export function calculateFare({ distanceKm = 1.0, durationMins = 5, vehicleType 
       durationMins: mins,
       timeCost: Math.round(mins * perMinRate),
       deliverySurcharge,
-      vehicleType,
+      vehicleType: vType,
       serviceType
     }
   };
 }
+

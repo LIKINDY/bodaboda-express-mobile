@@ -853,6 +853,14 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
   Widget _buildBottomTripPanel(BuildContext context, bool isDark) {
     final serviceType = (_trip['serviceType'] ?? _trip['service'] ?? 'ride').toString().toLowerCase();
     final isDelivery = serviceType == 'delivery' || serviceType.contains('mzigo');
+    final isForFriend = _trip['isForFriend'] == true || _trip['is_for_friend'] == true;
+    final friendName = _trip['friendName'] ?? _trip['friend_name'];
+    final friendPhone = _trip['friendPhone'] ?? _trip['friend_phone'];
+    final bookerName = _trip['bookedBy'] ?? _trip['customerName'] ?? 'Mteja';
+    final passengerName = (isForFriend && friendName != null) ? friendName : (_trip['passenger'] ?? 'Amina Salum');
+    final vehicleType = (_trip['vehicleType'] ?? _trip['vehicle_type'] ?? 'bodaboda').toString().toLowerCase();
+    final isBajaji = vehicleType.contains('bajaj');
+    final isCar = vehicleType.contains('car') || vehicleType.contains('taxi');
 
     return Container(
       decoration: BoxDecoration(
@@ -883,6 +891,32 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
             ),
             const SizedBox(height: 14),
 
+            // Friend booking badge
+            if (isForFriend) ...[
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade400),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.people_alt, color: Colors.green, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '👥 Safari ya Rafiki • Mchukuaji: $passengerName (Imeagizwa na: $bookerName)',
+                        style: TextStyle(color: Colors.green.shade900, fontWeight: FontWeight.bold, fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             // Passenger Info Row + Call & Chat Buttons
             Row(
               children: [
@@ -897,7 +931,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _trip['passenger'],
+                        passengerName,
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       const SizedBox(height: 2),
@@ -911,7 +945,7 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            _trip['payment'],
+                            _trip['payment'] ?? 'Cash',
                             style: TextStyle(
                               fontSize: 12,
                               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -949,13 +983,17 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    isDelivery ? Icons.inventory_2 : Icons.two_wheeler,
+                    isDelivery
+                        ? Icons.inventory_2
+                        : (isBajaji ? Icons.electric_rickshaw : (isCar ? Icons.directions_car : Icons.two_wheeler)),
                     size: 14,
                     color: isDelivery ? Colors.orange.shade800 : AppTheme.primaryBlue,
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    isDelivery ? 'KUSAFIRISHA MZIGO (DELIVERY)' : 'USAFIRI WA ABIRIA (TRANSPORT)',
+                    isDelivery
+                        ? 'KUSAFIRISHA MZIGO (DELIVERY)'
+                        : (isCar ? 'USAFIRI WA GARI (TAXI)' : (isBajaji ? 'USAFIRI WA BAJAJI' : 'USAFIRI WA BODABODA')),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -1214,6 +1252,136 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
   }
 
   void _callPassenger(BuildContext context) {
+    final isForFriend = _trip['isForFriend'] == true || _trip['is_for_friend'] == true;
+    final friendName = _trip['friendName'] ?? _trip['friend_name'] ?? _trip['recipient_name'];
+    final friendPhone = _trip['friendPhone'] ?? _trip['friend_phone'] ?? _trip['recipient_phone'];
+    final bookerName = _trip['passenger'] ?? _trip['booker_name'] ?? 'Mteja';
+    final bookerPhone = _trip['passengerPhone'] ?? _trip['booker_phone'] ?? '';
+
+    if (isForFriend && friendPhone != null && friendPhone.toString().isNotEmpty) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (ctx) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.people_alt, color: Colors.blue, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            appCopy(context, 'Choose Who to Call', 'Chagua wa Kumpigia Simu'),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            appCopy(context, 'This ride was booked for a friend', 'Safari hii imelipiwa kwa ajili ya rafiki'),
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Card(
+                  elevation: 0,
+                  color: Colors.blue.shade50,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.blue.shade200),
+                  ),
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
+                    title: Text(
+                      '$friendName (Abiria / Passenger)',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(friendPhone.toString()),
+                    trailing: const CircleAvatar(
+                      backgroundColor: Colors.green,
+                      radius: 18,
+                      child: Icon(Icons.call, color: Colors.white, size: 18),
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${appCopy(context, 'Calling passenger', 'Inapiga abiria')} $friendName ($friendPhone)...'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Card(
+                  elevation: 0,
+                  color: Colors.grey.shade50,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.grey.shade700,
+                      child: const Icon(Icons.credit_card, color: Colors.white),
+                    ),
+                    title: Text(
+                      '$bookerName (Mlipaji / Booker)',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(bookerPhone.toString()),
+                    trailing: CircleAvatar(
+                      backgroundColor: Colors.grey.shade700,
+                      radius: 18,
+                      child: const Icon(Icons.call, color: Colors.white, size: 18),
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${appCopy(context, 'Calling booker', 'Inapiga aliyelipia')} $bookerName ($bookerPhone)...'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: Text(appCopy(context, 'Cancel', 'Ghairi')),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1245,11 +1413,14 @@ class _DriverActiveRideScreenState extends State<DriverActiveRideScreen> {
   }
 
   void _chatWithPassenger(BuildContext context) {
+    final isForFriend = _trip['isForFriend'] == true || _trip['is_for_friend'] == true;
+    final friendName = _trip['friendName'] ?? _trip['friend_name'] ?? _trip['recipient_name'];
+    final nameToChat = (isForFriend && friendName != null) ? '$friendName (Rafiki)' : (_trip['passenger'] ?? 'Abiria');
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _DriverQuickChatModal(passengerName: _trip['passenger']),
+      builder: (context) => _DriverQuickChatModal(passengerName: nameToChat),
     );
   }
 

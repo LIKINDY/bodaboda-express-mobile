@@ -79,6 +79,9 @@ CREATE TYPE mall_order_status AS ENUM (
 -- Njia za Malipo
 CREATE TYPE payment_method AS ENUM ('cash', 'mpesa', 'tigopesa', 'airtel_money', 'wallet');
 
+-- Aina za Vyombo vya Usafiri (Vehicle Categories)
+CREATE TYPE vehicle_category AS ENUM ('bodaboda', 'bajaji', 'car');
+
 -- ==========================================================
 -- 2. WATUMIAJI (USERS & AUTH)
 -- ==========================================================
@@ -208,6 +211,10 @@ CREATE TABLE passenger_rides (
     dropoff_lng DOUBLE PRECISION NOT NULL,
     fare NUMERIC(10,2) NOT NULL,
     distance_km NUMERIC(5,2),
+    vehicle_type vehicle_category DEFAULT 'bodaboda',
+    is_for_friend BOOLEAN DEFAULT false,
+    friend_name VARCHAR(120),
+    friend_phone VARCHAR(20),
     status ride_status DEFAULT 'requested',
     payment_method payment_method DEFAULT 'cash',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
